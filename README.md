@@ -1,177 +1,128 @@
 # react-raphael
 
-[![Version](https://img.shields.io/npm/v/react-raphael.svg)](https://www.npmjs.com/package/react-raphael)
-[![Downloads](https://img.shields.io/npm/dt/react-raphael.svg)](https://www.npmjs.com/package/react-raphael)
+Typed React components for [Raphaël](https://github.com/DmitryBaranovskiy/raphael) vector graphics, animation, and interaction. Supports React 18 and 19, with ESM, CommonJS, and TypeScript declarations.
 
-reactify raphael
+## Development and playground
 
-## Install
+Use Node **22.22.2+** in the 22.x line, or **24.15+**. The `.nvmrc` selects Node 22; run `nvm install` to get its current patch.
 
-    # or specify the externals in webpack config
-    npm install --save raphael
-    # install react-raphael in your react-raphael project
-	npm install --save react-raphael
-
-## Example
-
-- [react-raphael-example](https://github.com/liuhong1happy/react-raphael-example)
-- [react-raphael-map](https://github.com/liuhong1happy/react-raphael-map)
-- [react-raphael-chart](https://github.com/liuhong1happy/react-raphael-chart)
-- [react-raphael-workflow](https://github.com/liuhong1happy/react-raphael-workflow)
-- [react-raphael-scrawl](https://github.com/liuhong1happy/react-raphael-scrawl)
-- [react-raphael-mine-sweeping](https://github.com/liuhong1happy/react-raphael-mine-sweeping)
-
-## Quickly Start
-
-```js
-var React = require('react');
-var ReactDOM = require('react-dom');
-
-const {Raphael,Paper,Set,Circle,Ellipse,Image,Rect,Text,Path,Line} = require('react-raphael');
-
-class App extends React.Component{
-    render(){
-        var data = [
-            {x:50,y:50,r:40,attr:{"stroke":"#0b8ac9","stroke-width":5},animate:Raphael.animation({cx:60},500,"<>")},
-            {x:100,y:100,r:40,attr:{"stroke":"#f0c620","stroke-width":5},animate:Raphael.animation({cx:105},500,"<>")},
-            {x:150,y:50,r:40,attr:{"stroke":"#1a1a1a","stroke-width":5}},
-            {x:200,y:100,r:40,attr:{"stroke":"#10a54a","stroke-width":5},animate:Raphael.animation({cx:195},500,"<>")},
-            {x:250,y:50,r:40,attr:{"stroke":"#e11032","stroke-width":5},animate:Raphael.animation({cx:240},500,"<>")}
-        ]
-        return (<Paper width={300} height={300}>
-                       <Set>    
-                        {
-                            data.map(function(ele,pos){
-                                return (<Circle key={pos} x={ele.x} y={ele.y} r={ele.r} attr={ele.attr} animate={ele.animate}/>)
-                            })
-                        }
-                        </Set>
-						<Set>
-                            <Rect x={30} y={148} width={240} height={150} attr={{"fill":"#10a54a","stroke":"#f0c620","stroke-width":5}}/>
-							<Ellipse x={150} y={198} ry={40} rx={100} attr={{"fill":"#fff","stroke":"#e11032"}} glow={{width:10,fill:true,color:"#0b8ac9",opacity:1}}/>
-                            <Image src="static/images/5circle.png" x={100} y={170} width={90} height={60} />
-							<Text x={150} y={258} text="同一个世界 同一个梦想" attr={{"fill":"#fff"}}/>
-							<Text x={150} y={273} text="One World One Dream" attr={{"fill":"#fff"}}/>
-							<Path d={["M150 287L150 287"]} animate={Raphael.animation({"path": ["M80 287L220 287"]},500,"<>")} attr={{"stroke":"#fff"}}/>
-                            <Line x1={150} y1={290} x2={150} y2={290} animate={Raphael.animation({ x1:80, x2:220},500,"<>")} attr={{"stroke":"#fff"}}/>
-						</Set>
-                </Paper>)
-    }
-}
+```sh
+npm install
+npm run dev
 ```
 
-## Snapshot
+Open the URL printed by Vite. The playground demonstrates all eight primitives and nested sets, motion/color/transform/path/synchronized animations, duration and easing controls, clicking, hovering, dragging, keyboard movement, and copyable examples. Reduced-motion preferences pause animations by default.
 
-![snapshot.png](images/snapshot.svg)
+```sh
+npm run typecheck
+npm run lint
+npm test
+npm run build          # dist/: ESM, CommonJS, declarations, source maps
+npm run test:package   # pack and verify JavaScript + TypeScript consumers
+npm run build:demo     # demo-dist/: static site with relative asset URLs
+npm run preview       # preview the production demo
+npx playwright install chromium webkit
+npm run test:browser   # real SVG integration and playground checks
+```
+
+CI checks both React 18 and 19. The old `lib/` directory is retained as a legacy artifact; new builds and package entrypoints use `dist/`. Files under `lib/` are not included in the package or rewritten by the build.
+
+## Installation
+
+```sh
+npm install react react-dom raphael react-raphael
+```
+
+For this checkout before publishing, run `npm pack` and install the resulting tarball in your game. Installing the existing registry release does **not** install this unreleased modernization.
+
+React and Raphaël are peer dependencies. React DOM is used by your application, not by the library. The package includes Raphaël's supporting types.
+
+```tsx
+import { createRef } from 'react';
+import { createRoot } from 'react-dom/client';
+import { Circle, Paper, Set, Text, type ElementHandle } from 'react-raphael';
+
+const circle = createRef<ElementHandle>();
+
+createRoot(document.getElementById('root')!).render(
+  <Paper width={400} height={220} viewbox="0 0 400 220">
+    <Set attr={{ stroke: 'none' }}>
+      <Circle
+        ref={circle}
+        x={60} y={100} r={30}
+        attr={{ fill: '#8061d9' }}
+        data={{ score: 0 }}
+        animate={{ attrs: { cx: 320 }, duration: 1200, easing: '<>' }}
+        click={function () { this.attr({ fill: '#e89458' }); }}
+      />
+      <Text x={200} y={180} text="Hello, vectors." />
+    </Set>
+  </Paper>,
+);
+
+// Call after mounting, for example in an event handler.
+circle.current?.getElement()?.data('score', 10);
+```
 
 ## API
 
-#### All Element Props
+All existing named exports remain: `Raphael`, `Utils`, `Paper`, `Set`, `Element`, `Circle`, `Ellipse`, `Image`, `Path`, `Print`, `Rect`, `Text`, and `Line`.
 
-- Paper 
-    - width `number` width of the canvas.
-    - height  `number` height of the canvas.
-	- container `object`  props of the canvas's container.`default value: { style:{}, className:"" }`
-- Element
-	- attr `object` Sets the attributes of the element.
-	- animate `object` Creates and starts animation for given element.
-	- animateWith `object` Acts similar to Element.animate, but ensure that given animation runs in sync with another given element.
-	- click `function` Adds event handler for click for the element.
-	- data `object` Adds or retrieves given value asociated with given key. 
-	- dblclick `function` Adds event handler for double click for the element.
-	- drag `object` Adds event handlers for drag of the element. `object {move,start,end,mcontext,scontext,econtext}`
-	- glow `function` Return set of elements that create glow-like effect around given element.
-	- hover `object` Adds event handlers for hover for the element. `object {in,out,icontext,ocontext}`
-	- hide `boolean` Makes element invisible. 
-	- mousedown `function` Adds event handler for mousedown for the element.
-	- mousemove `function` Adds event handler for mousemove for the element.
-	- mouseout `function` Adds event handler for mouseout for the element.
-	- mouseover `function` Adds event handler for mouseover for the element.
-	- mouseup `function` Adds event handler for mouseup for the element.
-    - load `function` Adds event handler for load for the element.
-	- rotate `object` Adds rotation by given angle around given point to the list of transformations of the element.
-	- scale `object` Adds scale by given amount relative to given point to the list of transformations of the element.
-    - stop `boolen` Stops animation for given element.
-	- toBack `boolean` Moves the element so it is the furthest from the viewer’s eyes, behind other elements.
-	- toFront `boolean` Moves the element so it is the closest to the viewer’s eyes, on top of other elements.
-	- touchcancel `function` Adds event handler for touchcancel for the element.
-	- touchend `function` Adds event handler for touchend for the element.
-	- touchmove `function` Adds event handler for touchmove for the element.
-	- touchstart `function` Adds event handler for touchstart for the element.
-	- transform `string` or `array` Adds transformation to the element which is separate to other attributes, i.e. translation doesn’t change x or y of the rectange. The format of transformation string is similar to the path string syntax:`"t100,100r30,100,100s2,2,100,100r45s1.5"`
-	- translate `object` Adds translation by given amount to the list of transformations of the element.
-	- update `function` Adds event handler for update for the element.
-- Set `Extends Element & Container Elements`
-- Circle  `Extends Element & Draws a circle`
-    - x `number` x coordinate of the centre
-    - y `number` y coordinate of the centre
-    - r `number` radius
-- Ellipse `Extends Element & Draws a ellipse`
-    - x `number` x coordinate of the centre
-    - y `number` y coordinate of the centre
-    - rx `number` horizontal radius
-	- ry `number` vertical radius
-- Image `Extends Element & Embeds an image into the surface`
-	- src `string` URI of the source image
-    - x `number` x coordinate of the centre
-    - y `number` y coordinate of the centre
-    - width `number` width of the image
-	- height `number` height of the image
-- Path `Extends Element & Creates a path element by given path data string`
-    - d `string` path string in SVG format
-- Print `Extends Element & Creates set of shapes to represent given font at given position with given size`
-    - x `number` x position of the text
-    - y `number` y position of the text
-    - text `string` text to print
-    - font-family `string` family of font object
-    - font-weight `string` weight of font object
-    - font-style `string` style of font object
-    - font-stretch `string` stretch of font object
-    - font-size `number` size of the font, default is 16
-    - origin `string` could be "baseline" or "middle", default is "middle"
-    - letter-spacing `number` number in range -1..1, default is 0
-- Rect `Extends Element & Draws a circle`
-    - x `number` x coordinate of the top left corner
-    - y `number` y coordinate of the top left corner
-    - width `number` width of the rect
-	- height `number` height of the rect
-    - r `number` radius for rounded corners, default is 0
-- Text `Extends Element & Draws a text string & If you need line breaks, put “\n” in the string`
-    - x `number` x coordinate position
-    - y `number` y coordinate position
-    - text `string` The text string to draw
-- Line `Extends Path & Draws a line`
-    - x1 `number` x coordinate of the start point
-    - y1 `number` y coordinate of the start point
-    - x2 `number` x coordinate of the end point
-	- y2 `number` y coordinate of the end point
-    
-#### All Element Ref Function
+| Component | Geometry props and defaults |
+| --- | --- |
+| `Paper` | `width=100`, `height=100`, `viewbox="x y width height"`; `container` accepts HTML div attributes |
+| `Circle` | `x=0`, `y=0`, `r=10` |
+| `Ellipse` | `x=0`, `y=0`, `rx=10`, `ry=20` |
+| `Rect` | `x=0`, `y=0`, `width=0`, `height=0`, `r=0` |
+| `Image` | `src=""`, `x=0`, `y=0`, `width=0`, `height=0` (top-left coordinates) |
+| `Path` | `d`: SVG path string, flat command array, or nested segments |
+| `Line` | `x1=0`, `y1=0`, `x2=0`, `y2=0` |
+| `Text` | `x=0`, `y=0`, `text=""` (supports newlines) |
+| `Print` | `x=0`, `y=0`, `text=""`, `fontFamily="Arial"`, `fontSize=16`, `origin="middle"`, `letterSpacing=0`, `lineSpacing=1`; optional font weight/style/stretch |
+| `Set` | Nested shapes/sets with shared element props |
+| `Element` | Lower-level component with `type` identifying the primitive |
 
-- Paper
-	- getPaper `function` paper of the component
-- Set
-	- getSet `function` set of the component
-- Element
-	- getElement `function` element of the component
+`Print` requires a vector font registered with `Raphael.registerFont`; a system font or CSS web font is insufficient. See `demo/font.ts` for the bundled, original pixel alphabet. Missing fonts produce an actionable error.
 
-#### Raphael & Utils
+### Shared shape and set props
 
-- Raphael `you can see ` [http://dmitrybaranovskiy.github.io/raphael/reference.html#Raphael](http://dmitrybaranovskiy.github.io/raphael/reference.html#Raphael)
-- Utils
-	- createPaper `function` create a paper by `Raphael()`
-    - updatePaper `function` update a paper
-    - removePaper `function` remove a paper
-	- create `function` create elements or a set by `paper.xxx`
-	- createElement `function` call create to create a element
-	- createSet `function` call create to create a set
-    - updateElement `function` update elements or a set 
-	- removeSet `function` remove a set from paper 
-	- removeElement `function` remove a element from paper 
-	- papers `array` all paper instance
-	- elements `array` all elements or set of the only paper instance
-    - findParentById `function` find parent of element by id
-	
-# Contact
+- `attr`: Raphaël attributes such as `fill`, `stroke`, `opacity`, and `stroke-width`.
+- `animate`: a native `Raphael.animation(...)` object, or `{ attrs, duration, easing?, callback?, repeat?, delay? }`.
+- `animateWith`: `{ element, animation, with? }`, identifying the leader element, its native animation, and an optional follower animation.
+- `click`, `dblclick`, mouse and touch events: native Raphaël callbacks. A regular function receives the element as `this`.
+- `hover`: `{ in, out, icontext?, ocontext? }`.
+- `drag`: `{ move, start?, end?, mcontext?, scontext?, econtext? }`.
+- `data`: key/value data available through the imperative element API.
+- `transform`: Raphaël transform string or segment array; `translate: { x, y }`, `rotate: { deg, cx?, cy? }`, `scale: { sx, sy?, cx?, cy? }`.
+- `glow`: partial Raphaël glow settings; `hide`, `stop`, `toBack`, `toFront`: boolean controls.
+- `load` and `update`: callbacks receiving the native element or set. `load` runs after creation; `update` runs for subsequent prop updates. In development Strict Mode, creation callbacks may run twice, with cleanup between runs.
 
-Email: [liuhong1.happy@163.com](mailto:liuhong1.happy@163.com)
+Geometry, attributes, and data are reconciled by changed values. Unchanged props do not reset imperative changes or restart animations. Removing event, hover, drag, glow, transform, or animation props cleans up that behavior. Removing data keys removes those keys. Omitted `attr` keys retain their current Raphaël values; reset them explicitly when needed. Treat all prop objects as immutable.
+
+Sets apply their props to current members and supply initial shared props to new descendants. Initial child props override inherited values; later set updates apply to all current members. A set is a Raphaël collection, not a DOM `<g>`.
+
+Supply a new native animation object or changed animation options to replay a declarative animation. Use `getElement().pause()` / `.resume()` for reversible playback control; `stop` terminates an animation. Line animations additionally accept `x1`, `y1`, `x2`, and `y2`, including zero, without mutating the supplied animation.
+
+### Refs and utilities
+
+`PaperHandle.getPaper()`, `SetHandle.getSet()`, and `ElementHandle.getElement()` return native instances, or `null` outside their mounted lifetime. Object refs and callback refs are supported; callback refs can access the instance immediately on attachment.
+
+`Utils` retains `createPaper`, `updatePaper`, `removePaper`, `create`, `createElement`, `createSet`, `updateElement`, `updateElementProps`, `removeElement`, `removeSet`, `findParentById`, `papers`, and `elements`. Its registries now contain only live instances. Prefer components for React-owned shapes and the removal utilities for manually managed resources. Callbacks and ref handle types are exported alongside component prop types.
+
+## Migrating from 0.9's React 15/16 implementation
+
+Upgrade the consuming app to React 18 or 19 and use `createRoot`. The neighboring game's React upgrade is a separate change. Existing shape names, geometry props, `attr`, events, `Raphael.animation`, and imperative handle methods remain available.
+
+Replace consumer string refs with object or callback refs. Callback refs must handle `null` on detachment:
+
+```tsx
+<Circle ref={handle => { movableBall = handle?.getElement() ?? null; }} />
+```
+
+Import from `react-raphael`; deep imports into `lib/` are not supported by the new export map. The runtime remains browser-only because Raphaël accesses `window` when imported. In SSR frameworks, load the package from a client-only boundary with server rendering disabled.
+
+Fixed behavior includes set cleanup and updates, removed event handlers, viewport updates, string transforms, glow cleanup, stacking controls, and line animation endpoints. Ref methods and load callbacks are preferable to depending on the old hidden DOM wrappers or timer-based initialization.
+
+## License
+
+MIT. Original library by Holly Liu. The bundled demo mark and pixel font are original assets covered by the same license.
